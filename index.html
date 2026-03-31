@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mahesh Babu Bloods | Donate Blood, Save Life</title>
+    <meta name="description"
+        content="A premium blood donation platform for Mahesh Babu Bloods foundation. Donate blood, save lives, and impact humanity.">
+    <!-- Tailwind CSS v4 Browser Script -->
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --blood-red: #D32F2F;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        h1,
+        h2,
+        h3,
+        .font-display {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* ECG Pulse Animation */
+        .ecg-path {
+            stroke-dasharray: 2000;
+            stroke-dashoffset: 2000;
+            animation: pulse 5s linear infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                stroke-dashoffset: 1000;
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                stroke-dashoffset: 0;
+                opacity: 0;
+            }
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Hover Transitions */
+        .hover-scale {
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
+
+
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-900" x-data="{ 
+        donateOpen: false, 
+        galleryOpen: false,
+        mobileMenuOpen: false,
+        activeImageIndex: 0,
+        galleryImages: [
+            'assets/our work/HEMANTH.jpg', 'assets/our work/IMG_20260123_181807.jpg', 'assets/our work/K SAI.jpg', 
+            'assets/our work/MALLESH.jpg', 'assets/our work/NAVEEN.jpg', 'assets/our work/SAI.jpg', 
+            'assets/our work/g anil.jpg', 'assets/our work/vamsi.jpg',
+            'assets/our work/mb_bloods-20260123-0001.jpg', 'assets/our work/mb_bloods-20260123-0002.jpg', 
+            'assets/our work/mb_bloods-20260123-0003.jpg', 'assets/our work/mb_bloods-20260123-0004.jpg', 
+            'assets/our work/mb_bloods-20260123-0005.jpg', 'assets/our work/mb_bloods-20260123-0006.jpg', 
+            'assets/our work/mb_bloods-20260123-0007.jpg', 'assets/our work/mb_bloods-20260123-0008.jpg', 
+            'assets/our work/mb_bloods-20260123-0009.jpg', 'assets/our work/mb_bloods-20260123-0010.jpg', 
+            'assets/our work/mb_bloods-20260123-0011.jpg', 'assets/our work/mb_bloods-20260123-0012.jpg', 
+            'assets/our work/mb_bloods-20260123-0013.jpg', 'assets/our work/mb_bloods-20260123-0014.jpg',
+            'assets/our work/mb_bloods-20260123-0015.jpg', 'assets/our work/mb_bloods-20260123-0016.jpg',
+            'assets/our work/mb_bloods-20260123-0017.jpg', 'assets/our work/mb_bloods-20260123-0018.jpg',
+            'assets/our work/mb_bloods-20260123-0019.jpg', 'assets/our work/mb_bloods-20260123-0020.jpg',
+            'assets/our work/mb_bloods-20260123-0021.jpg', 'assets/our work/mb_bloods-20260123-0022.jpg',
+            'assets/our work/mb_bloods-20260123-0023.jpg', 'assets/our work/mb_bloods-20260123-0024.jpg',
+            'assets/our work/mb_bloods-20260123-0025.jpg', 'assets/our work/mb_bloods-20260123-0026.jpg',
+            'assets/our work/mb_bloods-20260123-0027.jpg', 'assets/our work/mb_bloods-20260123-0028.jpg',
+            'assets/our work/mb_bloods-20260123-0029.jpg', 'assets/our work/mb_bloods-20260123-0030.jpg',
+            'assets/our work/mb_bloods-20260123-0031.jpg', 'assets/our work/mb_bloods-20260123-0032.jpg',
+            'assets/our work/mb_bloods-20260123-0033.jpg', 'assets/our work/mb_bloods-20260123-0034.jpg',
+            'assets/our work/mb_bloods-20260123-0035.jpg', 'assets/our work/mb_bloods-20260123-0036.jpg',
+            'assets/our work/mb_bloods-20260123-0037.jpg', 'assets/our work/mb_bloods-20260123-0038.jpg',
+            'assets/our work/mb_bloods-20260123-0039.jpg', 'assets/our work/mb_bloods-20260123-0040.jpg',
+            'assets/our work/mb_bloods-20260123-0041.jpg', 'assets/our work/mb_bloods-20260123-0042.jpg',
+            'assets/our work/mb_bloods-20260123-0043.jpg', 'assets/our work/mb_bloods-20260123-0044.jpg',
+            'assets/our work/mb_bloods-20260123-0045.jpg', 'assets/our work/mb_bloods-20260123-0046.jpg',
+            'assets/our work/mb_bloods-20260123-0047.jpg', 'assets/our work/mb_bloods-20260123-0048.jpg',
+            'assets/our work/mb_bloods-20260123-0049.jpg', 'assets/our work/mb_bloods-20260123-0050.jpg',
+            'assets/our work/mb_bloods-20260123-0051.jpg', 'assets/our work/mb_bloods-20260123-0052.jpg',
+            'assets/our work/mb_bloods-20260123-0053.jpg', 'assets/our work/mb_bloods-20260123-0054.jpg',
+            'assets/our work/mb_bloods-20260123-0055.jpg', 'assets/our work/mb_bloods-20260123-0056.jpg',
+            'assets/our work/mb_bloods-20260123-0057.jpg', 'assets/our work/mb_bloods-20260123-0058.jpg',
+            'assets/our work/mb_bloods-20260123-0059.jpg', 'assets/our work/mb_bloods-20260123-0060.jpg',
+            'assets/our work/mb_bloods-20260123-0061.jpg', 'assets/our work/mb_bloods-20260123-0062.jpg',
+            'assets/our work/mb_bloods-20260123-0063.jpg', 'assets/our work/mb_bloods-20260123-0064.jpg',
+            'assets/our work/mb_bloods-20260123-0065.jpg', 'assets/our work/mb_bloods-20260123-0069.jpg'
+        ],
+        donorCount: 75,
+        isSubmitting: false,
+        async fetchDonorCount() {
+            try {
+                const res = await fetch('http://localhost:5000/api/donors/count');
+                const data = await res.json();
+                if (data.count !== undefined) this.donorCount = data.count;
+            } catch (err) {
+                console.log('Backend not connected, using default count');
+            }
+        },
+        async submitDonation(event) {
+            this.isSubmitting = true;
+            try {
+                const formData = new FormData(event.target);
+                const data = Object.fromEntries(formData.entries());
+                
+                const response = await fetch('http://localhost:5000/api/donors', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fullName: data.fullName,
+                        dateOfBirth: data.dateOfBirth,
+                        phoneNumber: data.phoneNumber,
+                        bloodGroup: data.bloodGroup,
+                        address: {
+                            state: data.state,
+                            district: data.district,
+                            mandal: data.mandal,
+                            village: data.village
+                        }
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('Donation Registration Successful!');
+                    this.donateOpen = false;
+                    event.target.reset();
+                    this.fetchDonorCount();
+                } else {
+                    alert('Registration failed: ' + result.message);
+                }
+            } catch (error) {
+                alert('Connection Error: Please ensure the backend is running at http://localhost:5000');
+            } finally {
+                this.isSubmitting = false;
+            }
+        }
+    }" x-init="fetchDonorCount()" x-bind:class="galleryOpen || donateOpen ? 'overflow-hidden' : ''">
+
+    <!-- Sticky Navbar -->
+    <nav
+        class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex items-center justify-between shadow-sm">
+        <div class="flex items-center gap-3">
+            <img src="assets/mb%20bloods%20logo.png" alt="MB Bloods Logo" class="h-12 w-auto object-contain">
+        </div>
+
+        <div class="hidden md:flex items-center gap-8 text-sm font-bold text-gray-600 uppercase tracking-wide">
+            <a href="#" class="hover:text-red-600 transition-colors">Home</a>
+            <a href="#about" class="hover:text-red-600 transition-colors">About</a>
+            <a href="#" @click.prevent="donateOpen = true" class="hover:text-red-600 transition-colors">Donate</a>
+            <a href="https://wa.me/919491463888?text=I_need_blood_request" target="_blank"
+                class="hover:text-red-600 transition-colors">Request</a>
+            <a href="#" @click.prevent="galleryOpen = true" class="hover:text-red-600 transition-colors">Our Work</a>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <div class="md:hidden">
+            <button @click="mobileMenuOpen = !mobileMenuOpen"
+                class="p-2 text-gray-600 hover:text-red-600 transition-colors">
+                <svg x-show="!mobileMenuOpen" class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16">
+                    </path>
+                </svg>
+                <svg x-show="mobileMenuOpen" class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    x-cloak>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Mobile Menu Overlay -->
+        <div x-show="mobileMenuOpen" x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
+            x-transition:leave-end="opacity-0 -translate-y-4"
+            class="absolute top-full left-0 right-0 bg-white border-b border-gray-100 shadow-xl overflow-hidden z-40 md:hidden"
+            @click.away="mobileMenuOpen = false" x-cloak>
+            <div class="flex flex-col p-6 gap-4 text-center font-bold text-gray-600 uppercase tracking-widest text-sm">
+                <a href="#" @click="mobileMenuOpen = false"
+                    class="py-3 hover:text-red-600 border-b border-gray-50 transition-colors">Home</a>
+                <a href="#about" @click="mobileMenuOpen = false"
+                    class="py-3 hover:text-red-600 border-b border-gray-50 transition-colors">About</a>
+                <a href="#" @click.prevent="donateOpen = true; mobileMenuOpen = false"
+                    class="py-3 hover:text-red-600 border-b border-gray-50 transition-colors">Donate</a>
+                <a href="https://wa.me/919491463888?text=I_need_blood_request" target="_blank"
+                    @click="mobileMenuOpen = false"
+                    class="py-3 hover:text-red-600 border-b border-gray-50 transition-colors">Request</a>
+                <a href="#" @click.prevent="galleryOpen = true; mobileMenuOpen = false"
+                    class="py-3 hover:text-red-600 transition-colors">Our Work</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative min-h-[90vh] flex flex-col items-center justify-center overflow-hidden px-6">
+        <!-- ECG Background -->
+        <div class="absolute inset-0 flex items-center justify-center -z-10 pointer-events-none opacity-20">
+            <svg width="1000" height="200" viewBox="0 0 1000 200" class="w-full max-w-5xl">
+                <path
+                    d="M0,100 L200,100 L210,80 L225,120 L240,100 L300,100 L310,40 L330,160 L350,100 L450,100 L460,80 L475,120 L490,100 L600,100 L610,40 L630,160 L650,100 L800,100 L810,80 L825,120 L840,100 L1000,100"
+                    fill="none" stroke="#D32F2F" stroke-width="2" class="ecg-path"></path>
+            </svg>
+        </div>
+
+        <div class="w-full px-4 md:px-6 lg:px-10 py-4 lg:py-6">
+            <div
+                class="bg-black rounded-[3rem] md:rounded-[4rem] lg:rounded-[5rem] shadow-[0_60px_120px_-30px_rgba(0,0,0,0.6)] border border-white/10 relative overflow-hidden aspect-[4/3] md:aspect-[16/7] w-full flex items-center group">
+
+                <!-- Full-Size Background Image -->
+                <img src="assets/mb.jpg" alt="Mahesh Babu"
+                    class="absolute inset-0 w-full h-full object-cover opacity-60 grayscale-[10%] group-hover:scale-105 transition-transform duration-[3s] ease-out">
+
+                <!-- Contrast Overlay -->
+                <div class="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent z-0"></div>
+
+                <!-- Decorative elements slightly visible -->
+                <div class="absolute -top-32 -left-32 w-96 h-96 bg-red-900 rounded-full opacity-20 blur-3xl z-0"></div>
+                <div class="absolute -bottom-32 -right-32 w-96 h-96 bg-gray-900 rounded-full opacity-30 blur-3xl z-0">
+                </div>
+
+                <div
+                    class="grid grid-cols-3 gap-4 md:gap-16 items-center relative z-10 w-full px-6 md:px-24 py-8 md:py-16">
+                    <!-- Left Side: Bold Typography -->
+                    <div class="text-left space-y-4 md:space-y-8">
+                        <img src="assets/donate%20blood%20save%20life.png" alt="Donate Blood, Save Life"
+                            class="w-full h-auto drop-shadow-2xl transform hover:scale-[1.02] transition-transform duration-500 brightness-150">
+                    </div>
+
+                    <!-- Center: Blood Icon/Logo -->
+                    <div class="flex justify-center">
+                        <div
+                            class="relative w-full max-w-[120px] md:max-w-sm aspect-square flex items-center justify-center">
+                            <div
+                                class="absolute inset-0 bg-red-100 rounded-full blur-[40px] md:blur-[100px] opacity-40 animate-pulse">
+                            </div>
+                            <img src="assets/donate%20logo.png" alt="Donate Logo"
+                                class="z-10 w-full h-full object-contain transition-transform duration-700 hover:rotate-3 hover:scale-110">
+                        </div>
+                    </div>
+
+                    <!-- Right Side: Ambassador Portrait -->
+                    <div class="flex flex-col items-end group w-full h-full">
+                        <div
+                            class="relative w-full h-[60px] md:h-[400px] lg:h-[60vh] overflow-hidden rounded-xl md:rounded-[4rem] shadow-[0_15px_30px_-5px_rgba(0,0,0,0.3)] transition-all duration-700 group-hover:scale-[1.02] group-hover:shadow-[0_45px_80px_-20px_rgba(0,0,0,0.4)]">
+                            <img src="assets/mb.jpg" alt="Mahesh Babu Portfolio"
+                                class="w-full h-full object-cover grayscale-[15%] group-hover:grayscale-0 transition-all duration-1000 ease-out">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons and Org Note with ECG Pulse -->
+        <div class="relative flex flex-wrap justify-center items-center gap-10 md:gap-14 py-16 animate-fade-in-up">
+            <!-- ECG Animation passing through (Page-Wide) -->
+            <div
+                class="absolute inset-x-0 top-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-50 overflow-hidden select-none">
+                <svg width="100%" height="150" viewBox="0 0 1400 200" preserveAspectRatio="none" class="w-full">
+                    <!-- Primary Pulse -->
+                    <path
+                        d="M0,100 L100,100 L110,80 L125,120 L140,100 L350,100 L360,20 L385,180 L410,100 L750,100 L760,80 L775,120 L790,100 L1050,100 L1060,20 L1085,180 L1110,100 L1250,100 L1260,80 L1275,120 L1290,100 L1400,100"
+                        fill="none" stroke="#B91C1C" stroke-width="4" class="ecg-path opacity-40"></path>
+                    <!-- Secondary Irregular Pulse -->
+                    <path
+                        d="M0,100 L200,100 L210,40 L235,160 L260,100 L550,100 L560,80 L575,120 L590,100 L900,100 L910,20 L935,180 L960,100 L1150,100 L1160,80 L1175,120 L1190,100 L1400,100"
+                        fill="none" stroke="#EF4444" stroke-width="3" class="ecg-path opacity-20"
+                        style="animation-duration: 6s;"></path>
+                </svg>
+            </div>
+            <!-- Organization Note -->
+            <!-- Organization Note Highlighted -->
+            <div
+                class="relative z-10 max-w-[280px] bg-red-50 border-l-[6px] border-red-600 px-8 py-6 rounded-r-[2.5rem] shadow-[0_15px_30px_-5px_rgba(211,47,47,0.1)] transition-transform hover:scale-[1.03] duration-500">
+                <p class="text-[10px] md:text-xs font-black text-red-950 uppercase tracking-[0.25em] leading-[1.8]">
+                    A non profitable organization found by fan.
+                </p>
+            </div>
+
+            <div class="relative z-10 flex flex-row justify-center items-center gap-4 md:gap-8 flex-nowrap shrink-0">
+                <button @click="donateOpen = true"
+                    class="px-6 md:px-14 py-4 md:py-6 bg-red-600 text-white rounded-[1.5rem] md:rounded-[2rem] font-black text-sm md:text-2xl hover:bg-gray-900 hover:scale-105 transition-all shadow-2xl shadow-red-200 uppercase tracking-widest whitespace-nowrap">
+                    DONATE
+                </button>
+                <a href="https://wa.me/919491463888?text=I_need_blood_request" target="_blank"
+                    class="px-6 md:px-14 py-4 md:py-6 bg-red-600 text-white rounded-[1.5rem] md:rounded-[2rem] font-black text-sm md:text-2xl hover:bg-gray-900 hover:scale-105 transition-all flex items-center gap-4 shadow-2xl shadow-red-200 uppercase tracking-widest whitespace-nowrap">
+                    REQUEST BLOOD
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Medical Campaigns Section -->
+    <section id="about" class="py-24 bg-white">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
+                <!-- Medical Campaigns Column -->
+                <div
+                    class="p-8 bg-white border border-gray-100 rounded-[2.5rem] shadow-sm hover:shadow-md transition-all">
+                    <div class="flex items-center gap-4 mb-4">
+                        <img src="assets/medcv.png" alt="Medical Icon" class="h-12 w-auto">
+                        <h2 class="text-4xl font-bold">Medical Campaigns</h2>
+                    </div>
+                    <div class="h-1.5 w-20 bg-red-600 rounded-full mb-6"></div>
+                    <p class="text-gray-600 text-lg leading-relaxed">Our organization organizes blood donation drives on
+                        a periodic basis to support
+                        emergency healthcare needs across various regions.</p>
+                </div>
+
+                <!-- WE DONATE Column -->
+                <div class="p-8 bg-red-50/50 border border-red-100/50 rounded-[2.5rem] hover:shadow-md transition-all">
+                    <div class="flex items-center gap-4 mb-4">
+                        <img src="assets/donate%20hands.png" alt="Donate Hands" class="h-12 w-auto">
+                        <h2 class="text-4xl font-bold">WE DONATE</h2>
+                    </div>
+                    <div class="h-1.5 w-20 bg-red-600 rounded-full mb-6"></div>
+                    <p class="text-gray-600 text-lg leading-relaxed">
+                        Our organization is committed to supporting healthcare systems through blood donation
+                        initiatives and providing
+                        immediate donor assistance during medical emergencies.
+                    </p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Campaign Card -->
+                <div
+                    class="p-8 border border-gray-100 rounded-3xl hover:border-red-100 hover:shadow-2xl hover:shadow-red-50/50 transition-all duration-500 group">
+                    <div
+                        class="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-red-600 transition-colors">
+                        <svg class="w-8 h-8 text-red-600 group-hover:text-white transition-colors" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Rural Outreach</h3>
+                    <p class="text-gray-600 leading-relaxed">Bringing blood collection units to rural Mandals to ensure
+                        no life is lost due to distance.</p>
+                </div>
+
+                <div
+                    class="p-8 border border-gray-100 rounded-3xl hover:border-red-100 hover:shadow-2xl hover:shadow-red-50/50 transition-all duration-500 group">
+                    <div
+                        class="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-red-600 transition-colors">
+                        <svg class="w-8 h-8 text-red-600 group-hover:text-white transition-colors" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">24/7 Response</h3>
+                    <p class="text-gray-600 leading-relaxed">Immediate coordination between donors and hospitals during
+                        emergency cases and trauma care.</p>
+                </div>
+
+                <div
+                    class="p-8 border border-gray-100 rounded-3xl hover:border-red-100 hover:shadow-2xl hover:shadow-red-50/50 transition-all duration-500 group">
+                    <div
+                        class="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-red-600 transition-colors">
+                        <svg class="w-8 h-8 text-red-600 group-hover:text-white transition-colors" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Safe Extraction</h3>
+                    <p class="text-gray-600 leading-relaxed">Using world-class medical gear and sanitized equipment for
+                        painless and secure donation.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Impact Section -->
+    <section id="impact" class="py-24 bg-gray-50 overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <div class="relative">
+                    <img src="assets/blood donation.jpg" alt="Impact Illustration"
+                        class="w-full max-w-lg mx-auto rounded-3xl shadow-xl hover:scale-[1.02] transition-transform duration-500">
+                </div>
+                <div class="space-y-8">
+                    <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight leading-tight whitespace-nowrap">WE
+                        DONATE TODAY AND WE DONATE TOMORROW</h2>
+                    <p class="text-xl text-gray-600 leading-relaxed">
+                        Through our recurring medical initiatives, we facilitate the systematic collection of blood
+                        donations to reinforce local healthcare infrastructure. Our outreach efforts are strategically
+                        designed to secure a consistent supply of blood products, ensuring that life-saving resources
+                        are readily accessible for emergency medical procedures. By cultivating a dedicated community of
+                        donors, we serve as a vital link in the healthcare chain, providing rapid-response assistance
+                        when urgent clinical needs arise."
+
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+
+    <!-- Footer Area -->
+    <footer class="w-full flex flex-col">
+        <!-- Top Section with Button -->
+        <div class="container mx-auto px-6 flex flex-col items-center pt-20 pb-16">
+            <div class="flex flex-col md:flex-row items-center gap-8 md:gap-12 mb-12">
+                <img src="assets/mb%20bloods%20logo.png" alt="MB Bloods Logo"
+                    class="h-20 md:h-24 w-auto drop-shadow-xl hover-scale transition-transform">
+                <div class="flex flex-col items-center md:items-start md:border-l-2 md:border-red-600 md:pl-10">
+                    <span
+                        class="text-4xl md:text-6xl font-black tracking-tighter font-display bg-gradient-to-r from-[#d53f00] to-[#ffed02] bg-clip-text text-transparent leading-none"
+                        x-text="donorCount">75</span>
+                    <span
+                        class="text-xs md:text-sm font-bold text-red-600 uppercase tracking-[0.3em] mt-1">Donors</span>
+                </div>
+            </div>
+            <button @click.prevent="galleryOpen = true"
+                class="hover-scale transition-all duration-300 transform hover:scale-105 active:scale-95 focus:outline-none cursor-pointer">
+                <img src="assets/View%20our%20work.png" alt="View Our Work" class="h-20 md:h-24 w-auto drop-shadow-2xl">
+            </button>
+        </div>
+
+        <!-- Bottom Copyright and Logos Section in Black -->
+        <div class="w-full bg-black pt-8 pb-10 border-t border-gray-800">
+            <div
+                class="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
+                <!-- Left Side: Social Media Logos -->
+                <div class="flex items-center gap-4">
+                    <!-- Instagram -->
+                    <a href="https://www.instagram.com/mb_bloods?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
+                        target="_blank" rel="noopener noreferrer"
+                        class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-white hover:bg-red-600 hover:text-white hover:scale-110 transition-all duration-300 shadow-sm border border-gray-800 hover:border-red-600">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                        </svg>
+                    </a>
+                    <!-- Twitter (X) -->
+                    <a href="https://x.com/MB_BLOODS" target="_blank" rel="noopener noreferrer"
+                        class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-black hover:scale-110 transition-all duration-300 shadow-sm border border-gray-800 hover:border-white">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                        </svg>
+                    </a>
+                    <!-- Mail -->
+                    <a href="mailto:MaheshBabuBloods@gmail.com"
+                        class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-white hover:bg-red-600 hover:text-white hover:scale-110 transition-all duration-300 shadow-sm border border-gray-800 hover:border-red-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path
+                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                    </a>
+                    <!-- WhatsApp -->
+                    <a href="https://wa.me/919491463888" target="_blank"
+                        class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-white hover:bg-green-500 hover:text-white hover:scale-110 transition-all duration-300 shadow-sm border border-gray-800 hover:border-green-500">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.588-5.946 0-6.556 5.332-11.888 11.888-11.888 3.176 0 6.161 1.237 8.404 3.48s3.481 5.229 3.481 8.406c0 6.556-5.332 11.888-11.888 11.888-2.01 0-3.988-.511-5.741-1.482l-6.143 1.705zm6.349-4.435l.353.21c1.47.873 3.158 1.335 4.887 1.335 5.507 0 9.991-4.484 9.991-9.99s-4.484-9.99-9.991-9.99c-5.507 0-9.99 4.484-9.99 9.99 0 2.225.734 4.394 2.121 6.166l.231.293-.958 3.498 3.582-.933zm9.363-7.513c-.237-.118-1.399-.691-1.617-.771-.217-.079-.376-.118-.535.118s-.614.771-.752.928-.276.178-.514.059-.991-.365-1.887-1.164c-.698-.622-1.168-1.391-1.305-1.628s-.015-.365.105-.483c.107-.107.237-.276.356-.415s.158-.237.237-.395.04-.296-.02-.415-.535-1.284-.732-1.758c-.192-.464-.385-.4-.535-.407-.138-.007-.297-.008-.455-.008s-.415.059-.633.296c-.217.237-.831.811-.831 1.978s.85 2.293.969 2.451c.119.158 1.673 2.555 4.053 3.582.566.244 1.008.389 1.353.499.569.181 1.088.155 1.498.094.457-.068 1.399-.573 1.597-1.126.197-.553.197-1.028.138-1.126s-.217-.118-.454-.237z" />
+                        </svg>
+                    </a>
+                </div>
+                <!-- Right Side: Copyright -->
+                <div class="text-white opacity-80 text-xs uppercase tracking-widest font-bold">
+                    © 2026 MB BLOODS FOUNDATION. ALL RIGHTS RESERVED.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Donate Modal -->
+    <div x-show="donateOpen" x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+        (@click.away="donateOpen = false" x-cloak)>
+
+        <div
+            class="bg-white rounded-[2rem] md:rounded-[3rem] w-full max-w-6xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col md:flex-row relative">
+
+            <!-- Left Side: Full Image -->
+            <div class="hidden md:block md:w-1/2 relative bg-white border-r border-gray-50 p-6">
+                <img src="assets/mb.jpg" alt="Mahesh Babu" class="w-full h-full object-contain">
+            </div>
+
+            <!-- Right Side: Form Content -->
+            <div class="flex-1 p-8 md:p-12 overflow-y-auto custom-scrollbar relative">
+                <!-- Close Button -->
+                <button @click="donateOpen = false"
+                    class="absolute top-6 right-6 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-all z-20">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+
+                <div class="mb-10">
+                    <h2 class="text-4xl font-black mb-2 font-display uppercase tracking-tight">Be a Donor</h2>
+                    <p class="text-gray-500 font-medium">Fill in the details to register yourself as a life-saver.</p>
+                </div>
+
+                <form class="space-y-6" id="donateForm" @submit.prevent="submitDonation($event)">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-sm font-bold text-gray-700 ml-1">Full Name</label>
+                            <input type="text" name="fullName" placeholder="John Doe" required
+                                class="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-red-500 focus:outline-none focus:bg-white transition-all">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-bold text-gray-700 ml-1">Date of Birth</label>
+                            <input type="date" name="dateOfBirth" required
+                                class="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-red-500 focus:outline-none focus:bg-white transition-all">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-sm font-bold text-gray-700 ml-1">Phone Number</label>
+                            <div
+                                class="flex items-center bg-gray-50 border border-gray-100 rounded-2xl focus-within:ring-2 focus-within:ring-red-500 transition-all overflow-hidden">
+                                <span
+                                    class="px-5 py-4 font-bold text-gray-500 bg-gray-100/50 border-r border-gray-200">+91</span>
+                                <input type="tel" name="phoneNumber" placeholder="00000 00000" maxlength="10"
+                                    pattern="[0-9]{10}" required
+                                    oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                    class="w-full px-5 py-4 bg-transparent focus:outline-none">
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-bold text-gray-700 ml-1">Blood Group</label>
+                            <select name="bloodGroup" required
+                                class="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-red-500 focus:outline-none focus:bg-white transition-all">
+                                <option>A+</option>
+                                <option>A-</option>
+                                <option>B+</option>
+                                <option>B-</option>
+                                <option>O+</option>
+                                <option>O-</option>
+                                <option>AB+</option>
+                                <option>AB-</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Nested Address Section -->
+                    <div class="p-6 bg-red-50/50 rounded-3xl space-y-6">
+                        <p class="text-xs font-bold text-red-800 uppercase tracking-widest pl-1">Address Details</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-gray-600">State</label>
+                                <input type="text" name="state" placeholder="State name" required
+                                    class="w-full px-5 py-3 bg-white border border-gray-100 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-gray-600">District</label>
+                                <input type="text" name="district" placeholder="District name" required
+                                    class="w-full px-5 py-3 bg-white border border-gray-100 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-gray-600">Mandal</label>
+                                <input type="text" name="mandal" placeholder="Mandal name" required
+                                    class="w-full px-5 py-3 bg-white border border-gray-100 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-gray-600">Village / Street</label>
+                                <input type="text" name="village" placeholder="Village name" required
+                                    class="w-full px-5 py-3 bg-white border border-gray-100 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3 py-2">
+                        <input type="checkbox" id="declaration" class="w-5 h-5 accent-red-600 rounded">
+                        <label for="declaration" class="text-sm text-gray-600">I declare that I am fit for blood
+                            donation as
+                            per the medical guidelines.</label>
+                    </div>
+
+                    <button type="submit"
+                        class="w-full bg-red-600 text-white font-black py-5 rounded-2xl hover:bg-red-700 transition-all shadow-lg hover:shadow-red-200 uppercase tracking-widest flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                        :disabled="isSubmitting">
+                        <span x-show="!isSubmitting">Submit Registration</span>
+                        <span x-show="isSubmitting" class="flex items-center gap-2">
+                            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
+                            </svg>
+                            Processing...
+                        </span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gallery Modal -->
+    <div x-show="galleryOpen" x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 bg-white/95 backdrop-blur-xl"
+        style="display: none;">
+
+        <!-- Backdrop click handler -->
+        <div class="absolute inset-0 z-0" @click="galleryOpen = false"></div>
+
+        <div
+            class="relative w-full max-w-7xl h-[85vh] md:h-[90vh] bg-white rounded-[2.5rem] shadow-[0_30px_100px_rgba(0,0,0,0.1)] border border-gray-100 flex flex-col z-10 overflow-hidden">
+
+            <button @click="galleryOpen = false"
+                class="absolute top-3 right-3 md:top-6 md:right-6 p-3 md:p-4 bg-gray-100/50 backdrop-blur-sm text-gray-500 rounded-full hover:bg-red-600 hover:text-white transition-all z-20 shadow-sm active:scale-95">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+
+            <!-- Gallery Header -->
+            <div class="w-full text-center py-8 border-b border-gray-100 shrink-0 bg-white z-10">
+                <h2 class="text-3xl md:text-5xl font-black text-gray-900 uppercase tracking-widest font-display">
+                    Donars By our side</h2>
+                <div class="w-16 h-1.5 mt-4 mx-auto rounded-full bg-red-600"></div>
+            </div>
+
+            <!-- Scrollable Grid -->
+            <style>
+                .gallery-scrollbar::-webkit-scrollbar {
+                    width: 8px;
+                }
+
+                .gallery-scrollbar::-webkit-scrollbar-track {
+                    background: #F9FAFB;
+                }
+
+                .gallery-scrollbar::-webkit-scrollbar-thumb {
+                    background: #ef4444;
+                    border-radius: 10px;
+                }
+            </style>
+
+            <div class="w-full flex-grow overflow-y-auto p-6 md:p-10 gallery-scrollbar overscroll-contain">
+                <!-- Desktop Masonry Grid -->
+                <div class="hidden md:block columns-1 sm:columns-2 md:columns-3 gap-6 space-y-6">
+                    <template x-for="(img, index) in galleryImages" :key="index">
+                        <img :src="img"
+                            class="w-full rounded-2xl shadow-md hover:scale-[1.02] hover:shadow-2xl transition-all cursor-pointer border border-gray-100 hover:border-red-600"
+                            loading="lazy">
+                    </template>
+                </div>
+
+                <!-- Mobile Slideshow -->
+                <div class="md:hidden h-full flex flex-col justify-center items-center relative gap-8">
+                    <div
+                        class="relative w-full aspect-[4/5] bg-gray-50 rounded-3xl overflow-hidden shadow-xl border border-gray-100">
+                        <template x-for="(img, index) in galleryImages" :key="index">
+                            <div x-show="activeImageIndex === index"
+                                x-transition:enter="transition ease-out duration-300"
+                                x-transition:enter-start="opacity-0 scale-95"
+                                x-transition:enter-end="opacity-100 scale-100" class="absolute inset-0">
+                                <img :src="img" class="w-full h-full object-cover">
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Slideshow Controls -->
+                    <div class="flex items-center gap-10">
+                        <button
+                            @click="activeImageIndex = (activeImageIndex > 0) ? activeImageIndex - 1 : galleryImages.length - 1"
+                            class="p-4 bg-white border border-gray-100 rounded-2xl shadow-lg text-gray-900 active:scale-95 transition-all">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                                <path d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </button>
+
+                        <div class="font-black text-xl text-gray-900 tracking-widest font-display">
+                            <span x-text="activeImageIndex + 1" class="text-red-600"></span>
+                            <span class="text-gray-300 mx-1">/</span>
+                            <span x-text="galleryImages.length"></span>
+                        </div>
+
+                        <button
+                            @click="activeImageIndex = (activeImageIndex < galleryImages.length - 1) ? activeImageIndex + 1 : 0"
+                            class="p-4 bg-white border border-gray-100 rounded-2xl shadow-lg text-gray-900 active:scale-95 transition-all">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                                <path d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</body>
+
+</html>
