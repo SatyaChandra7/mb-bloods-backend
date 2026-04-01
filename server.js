@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const { google } = require('googleapis');
 require('dotenv').config();
 
 const app = express();
@@ -16,6 +17,41 @@ app.use(express.json());
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('Connected to MongoDB!'))
     .catch((err) => console.error('MongoDB connection error:', err));
+
+// Google Sheets Config
+const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY || 'AIzaSyBvF18DbnlWTVb6D_FQf5DatSOPXtoz92c';
+// Note: You must put your actual spreadsheet ID here (found in your Google Sheets URL)
+const SPREADSHEET_ID = process.env.GOOGLE_SPREADSHEET_ID || 'YOUR_SPREADSHEET_ID_HERE'; 
+
+const sheets = google.sheets({ version: 'v4', auth: GOOGLE_API_KEY });
+
+async function appendDonorToGoogleSheet(donor) {
+    try {
+        // Warning: Writing to Google Sheets via API Key will likely return a 401 error.
+        // Google requires OAuth2 or Service Accounts (JSON file) to append data.
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: SPREADSHEET_ID,
+            range: 'Sheet1!A:I', // Make sure you have a Tab named 'Sheet1'
+            valueInputOption: 'USER_ENTERED',
+            requestBody: {
+                values: [[
+                    donor.fullName,
+                    new Date(donor.dateOfBirth).toLocaleDateString(),
+                    donor.phoneNumber,
+                    donor.bloodGroup,
+                    donor.address?.state || '',
+                    donor.address?.district || '',
+                    donor.address?.mandal || '',
+                    donor.address?.village || '',
+                    new Date().toLocaleString() // Registered At
+                ]]
+            }
+        });
+        console.log('Appended to Google Sheets successfully');
+    } catch (error) {
+        console.error('Google Sheets API Error (Write access typically requires Service Account):', error.message);
+    }
+}
 
 // Donor Schema
 const donorSchema = new mongoose.Schema({
@@ -54,6 +90,9 @@ app.post('/api/donors', async (req, res) => {
         });
 
         await newDonor.save();
+        
+        // Push to Google Sheets asynchronously (so user doesn't have to wait for it)
+        appendDonorToGoogleSheet(newDonor);
         
         res.status(201).json({ 
             success: true, 
