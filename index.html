@@ -84,6 +84,7 @@
 <body class="bg-gray-50 text-gray-900" x-data="{ 
         donateOpen: false, 
         galleryOpen: false,
+        successOpen: false,
         mobileMenuOpen: false,
         activeImageIndex: 0,
         galleryImages: [
@@ -162,7 +163,7 @@
 
                 const result = await response.json();
                 if (result.success) {
-                    alert('Donation Registration Successful!');
+                    this.successOpen = true;
                     this.donateOpen = false;
                     event.target.reset();
                     this.fetchDonorCount();
@@ -738,6 +739,25 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div x-show="successOpen" x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
+        class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" x-cloak>
+        <div class="bg-white rounded-3xl p-8 max-w-sm text-center shadow-2xl relative border border-gray-100">
+            <!-- Checkmark -->
+            <div class="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <h3 class="text-2xl font-black mb-3 font-display uppercase tracking-tight text-gray-900">Registration Successful!</h3>
+            <p class="text-gray-500 font-medium mb-8 leading-relaxed">Thank you for donating blood! Your details have been verified and directly uploaded to the Google Sheets list and the Admin Panel.</p>
+            <button @click="successOpen = false" class="bg-gray-900 hover:bg-black text-white w-full py-4 rounded-2xl font-bold transition-all shadow-lg active:scale-95 uppercase tracking-wider text-sm">Continue</button>
         </div>
     </div>
 
