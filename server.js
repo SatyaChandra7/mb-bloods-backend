@@ -11,8 +11,8 @@ const PORT = process.env.PORT || 5000;
 // Admin Config
 const JWT_SECRET = process.env.JWT_SECRET || 'mbbloods-super-secret-key-123';
 const ADMIN_USERS = [
-    { username: process.env.ADMIN1_USER || 'admin1', password: process.env.ADMIN1_PASS || 'admin123' },
-    { username: process.env.ADMIN2_USER || 'admin2', password: process.env.ADMIN2_PASS || 'admin234' }
+    { username: process.env.ADMIN1_USER || 'satya', password: process.env.ADMIN1_PASS || 'Chandu@0713#' },
+    { username: process.env.ADMIN2_USER || 'Mahesh', password: process.env.ADMIN2_PASS || 'Bloods@0809#' }
 ];
 
 // Middleware
@@ -87,6 +87,10 @@ app.get('/health', (req, res) => {
 // Register Donor
 app.post('/api/donors', async (req, res) => {
     try {
+        if (mongoose.connection.readyState !== 1) {
+            return res.status(500).json({ success: false, message: 'Database connection failed. Please check MONGODB_URI in Vercel settings.' });
+        }
+        
         const { fullName, dateOfBirth, phoneNumber, bloodGroup, address } = req.body;
 
         const newDonor = new Donor({
@@ -119,6 +123,9 @@ app.post('/api/donors', async (req, res) => {
 // Get Donor Count
 app.get('/api/donors/count', async (req, res) => {
     try {
+        if (mongoose.connection.readyState !== 1) {
+            return res.status(500).json({ success: false, message: 'DB not connected' });
+        }
         const count = await Donor.countDocuments();
         res.json({ count });
     } catch (err) {
@@ -130,7 +137,7 @@ app.get('/api/donors/count', async (req, res) => {
 app.post('/api/admin/login', (req, res) => {
     const { username, password } = req.body;
     const admin = ADMIN_USERS.find(u => u.username === username && u.password === password);
-    
+
     if (admin) {
         const token = jwt.sign({ username: admin.username, role: 'admin' }, JWT_SECRET, { expiresIn: '12h' });
         res.json({ success: true, token });
