@@ -1,3 +1,11 @@
+// Error handling for unhandled rejections/exceptions
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
+});
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
 const express = require('express');
 const cors = require('cors');
 const { google } = require('googleapis');
@@ -6,7 +14,7 @@ require('dotenv').config();
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
-const { Sequelize, DataTypes } = require('sequelize');
+const { Sequelize, DataTypes, Op } = require('sequelize');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -20,7 +28,7 @@ app.use(express.json());
 // SQL Database Initialization (Sequelize + SQLite)
 const dbPath = process.env.NODE_ENV === 'production' 
     ? path.join('/tmp', 'database.sqlite') 
-    : 'database.sqlite';
+    : path.join(__dirname, 'database.sqlite');
 
 const sequelize = new Sequelize({
     dialect: 'sqlite',
@@ -44,36 +52,48 @@ const Donor = sequelize.define('Donor', {
 });
 
 // Admin Config
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
 const ADMIN_USERS = [
     { username: process.env.ADMIN1_USER, password: process.env.ADMIN1_PASS },
     { username: process.env.ADMIN2_USER, password: process.env.ADMIN2_PASS }
-];
+].filter(u => u.username && u.password);
 
 // Serve static files (HTML, CSS, JS, Assets)
 app.use(express.static(__dirname));
 
-// Root route to serve index.html
+// Root route
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Google Sheets Config
-const SERVICE_ACCOUNT_FILE = 'service-account.json';
+const SERVICE_ACCOUNT_FILE = path.join(__dirname, 'service-account.json');
 const SPREADSHEET_ID = process.env.GOOGLE_SPREADSHEET_ID;
 
 let sheets;
-async function initializeGoogleSheets() {
+let isInitialized = false;
+
+async function initializeApp() {
+    if (isInitialized) return;
     try {
+        // Auth with DB
+        await sequelize.authenticate();
+        await sequelize.sync();
+        
+        // Auth with Google
         let auth;
         if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
-            const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
-            auth = new google.auth.GoogleAuth({
-                credentials,
-                scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-            });
-            sheets = google.sheets({ version: 'v4', auth });
-            console.log('Google Sheets: Service Account (from env) initialized.');
+            try {
+                const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+                auth = new google.auth.GoogleAuth({
+                    credentials,
+                    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+                });
+                sheets = google.sheets({ version: 'v4', auth });
+                console.log('Google Sheets: Service Account (from env) initialized.');
+            } catch (e) {
+                console.error('Failed to parse GOOGLE_SERVICE_ACCOUNT_JSON:', e.message);
+            }
         } else if (fs.existsSync(SERVICE_ACCOUNT_FILE)) {
             auth = new google.auth.GoogleAuth({
                 keyFile: SERVICE_ACCOUNT_FILE,
@@ -81,16 +101,14 @@ async function initializeGoogleSheets() {
             });
             sheets = google.sheets({ version: 'v4', auth });
             console.log('Google Sheets: Service Account file initialized.');
-        } else if (process.env.GOOGLE_API_KEY) {
-            sheets = google.sheets({ version: 'v4', auth: process.env.GOOGLE_API_KEY });
-            console.log('Google Sheets: API Key initialized (Note: Append requires Service Account).');
         }
 
-        if (sheets) {
+        if (sheets && SPREADSHEET_ID) {
             await syncSheetsToSQL();
         }
+        isInitialized = true;
     } catch (err) {
-        console.error('Failed to initialize Google Sheets:', err.message);
+        console.error('Initialization error:', err.message);
     }
 }
 
@@ -104,7 +122,6 @@ async function syncSheetsToSQL() {
         const rows = response.data.values;
         if (rows && rows.length > 0) {
             for (const row of rows) {
-                // Find or create to prevent duplicates
                 await Donor.findOrCreate({
                     where: { phoneNumber: row[3], fullName: row[0] },
                     defaults: {
@@ -120,19 +137,16 @@ async function syncSheetsToSQL() {
                     }
                 });
             }
-            console.log(`✅ Synced ${rows.length} records from Google Sheets.`);
+            console.log(`✅ Synced ${rows.length} records.`);
         }
     } catch (error) {
-        console.error('Failed to sync from Google Sheets:', error.message);
+        console.error('Sync Error:', error.message);
     }
 }
 
 async function appendDonorToGoogleSheet(donor) {
     try {
-        if (!sheets || !SPREADSHEET_ID) {
-            console.warn('Google Sheets not initialized properly. Data NOT appended.');
-            return;
-        }
+        if (!sheets || !SPREADSHEET_ID) return;
         await sheets.spreadsheets.values.append({
             spreadsheetId: SPREADSHEET_ID,
             range: `${SHEET_NAME}!A:J`,
@@ -152,15 +166,28 @@ async function appendDonorToGoogleSheet(donor) {
                 ]]
             }
         });
-        console.log('✅ Appended to Google Sheets successfully');
     } catch (error) {
-        console.error('❌ Google Sheets Append Error:', error.message);
+        console.error('Google Sheets Append Error:', error.message);
     }
 }
 
+// Ensure initialization happens for every request if not ready
+app.use(async (req, res, next) => {
+    if (!isInitialized && req.path.startsWith('/api')) {
+        await initializeApp();
+    }
+    next();
+});
+
 // Storage for "Our Work" Gallery
-const UPLOAD_DIR = path.join(__dirname, 'assets', GALLERY_PATH);
-if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+const UPLOAD_DIR = path.join(process.env.NODE_ENV === 'production' ? '/tmp' : __dirname, 'assets', GALLERY_PATH);
+if (!fs.existsSync(UPLOAD_DIR)) {
+    try {
+        fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+    } catch (e) {
+        console.error('Failed to create upload dir:', e.message);
+    }
+}
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, UPLOAD_DIR),
@@ -168,87 +195,64 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// Multi-endpoint Auth Logic
+// Verification Middleware
 const verifyAdmin = (req, res, next) => {
     const authHeader = req.headers.authorization;
     const token = (authHeader && authHeader.split(' ')[1]) || req.query.token;
-    if (!token) return res.status(403).json({ success: false, message: 'Access Denied: No token provided' });
+    if (!token) return res.status(403).json({ success: false, message: 'No token' });
     try {
         const verified = jwt.verify(token, JWT_SECRET);
         if (verified.role === 'admin') {
             req.user = verified;
             next();
         } else {
-            res.status(403).json({ success: false, message: 'Access Denied: Not an admin' });
+            res.status(403).json({ success: false, message: 'Not admin' });
         }
     } catch (err) {
-        res.status(401).json({ success: false, message: 'Invalid or Expired Token' });
+        res.status(401).json({ success: false, message: 'Invalid token' });
     }
 };
 
 let currentAlert = null;
 
 // API Endpoints
-// Health Check
-app.get('/health', (req, res) => {
-    res.json({ status: 'Backend is running!' });
-});
+app.get('/health', (req, res) => res.json({ status: 'ok', initialized: isInitialized }));
 
-// Register Donor
 app.post('/api/donors', async (req, res) => {
     try {
         const { fullName, dateOfBirth, gender, phoneNumber, bloodGroup, address } = req.body;
-
         const newDonor = await Donor.create({
-            fullName,
-            dateOfBirth,
-            gender,
-            phoneNumber,
-            bloodGroup,
+            fullName, dateOfBirth, gender, phoneNumber, bloodGroup,
             state: address?.state || '',
             district: address?.district || '',
             mandal: address?.mandal || '',
             village: address?.village || ''
         });
-
-        // Push to Google Sheets (Async)
-        appendDonorToGoogleSheet(newDonor).catch(err => console.error('Sheet sync failed:', err));
-
-        res.status(201).json({
-            success: true,
-            message: 'Donor registered successfully!',
-            donor: newDonor
-        });
+        appendDonorToGoogleSheet(newDonor).catch(console.error);
+        res.status(201).json({ success: true, donor: newDonor });
     } catch (err) {
-        console.error('Registration failed:', err);
-        res.status(500).json({
-            success: false,
-            message: 'Internal server error. Please try again later.'
-        });
+        res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// Public Stats
-app.get('/api/donations/count', (req, res) => {
+app.get('/api/donations/count', async (req, res) => {
     try {
-        const images = fs.readdirSync(UPLOAD_DIR);
-        res.json({ count: images.length });
+        const count = await Donor.count();
+        res.json({ count });
     } catch (err) {
         res.json({ count: 0 });
     }
 });
 
-// Public Gallery
 app.get('/api/public/gallery', (req, res) => {
     try {
-        const images = fs.readdirSync(UPLOAD_DIR).filter(f => /\.(jpg|jpeg|png|gif)$/i.test(f));
-        res.json({ success: true, images: images.map(img => `assets/${GALLERY_PATH}/${img}`) });
+        const files = fs.readdirSync(UPLOAD_DIR).filter(f => /\.(jpg|jpeg|png|gif)$/i.test(f));
+        res.json({ success: true, images: files.map(img => `assets/${GALLERY_PATH}/${img}`) });
     } catch (err) {
         res.json({ success: false, images: [] });
     }
 });
 
-// Admin Login
 app.post('/api/admin/login', (req, res) => {
     const { username, password } = req.body;
     const admin = ADMIN_USERS.find(u => u.username === username && u.password === password);
@@ -256,167 +260,82 @@ app.post('/api/admin/login', (req, res) => {
         const token = jwt.sign({ username: admin.username, role: 'admin' }, JWT_SECRET, { expiresIn: '12h' });
         res.json({ success: true, token });
     } else {
-        res.status(401).json({ success: false, message: 'Invalid Admin Credentials' });
+        res.status(401).json({ success: false, message: 'Invalid' });
     }
 });
 
-// Admin Image Upload
 app.post('/api/admin/upload', verifyAdmin, upload.single('image'), (req, res) => {
-    if (!req.file) return res.status(400).json({ success: false, message: 'No image uploaded' });
     res.json({ success: true, filepath: `assets/${GALLERY_PATH}/${req.file.filename}` });
 });
 
-// Get Admin Donor Stats
-app.get('/api/admin/stats', async (req, res) => {
+app.get('/api/admin/stats', verifyAdmin, async (req, res) => {
     try {
-        const allGroups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
-        const total = await Donor.count();
-        
-        const stats = await Promise.all(allGroups.map(async (group) => {
-            const count = await Donor.count({ where: { bloodGroup: group } });
-            return { group, count };
-        }));
-        
-        res.json({ success: true, stats, total });
+        const groups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
+        const stats = await Promise.all(groups.map(async (g) => ({ group: g, count: await Donor.count({ where: { bloodGroup: g } }) })));
+        res.json({ success: true, stats, total: await Donor.count() });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.status(500).json({ success: false });
     }
 });
 
-// Get Admin Donors (with filters)
 app.get('/api/admin/donors', verifyAdmin, async (req, res) => {
     const { bloodGroup, address } = req.query;
-    let whereClause = {};
-
-    if (bloodGroup && bloodGroup !== 'All') {
-        whereClause.bloodGroup = bloodGroup;
-    }
-
+    let where = {};
+    if (bloodGroup && bloodGroup !== 'All') where.bloodGroup = bloodGroup;
     if (address) {
-        const { Op } = require('sequelize');
-        whereClause[Op.or] = [
+        where[Op.or] = [
             { state: { [Op.like]: `%${address}%` } },
             { district: { [Op.like]: `%${address}%` } },
             { mandal: { [Op.like]: `%${address}%` } },
             { village: { [Op.like]: `%${address}%` } }
         ];
     }
-
-    try {
-        const results = await Donor.findAll({
-            where: whereClause,
-            order: [['registeredAt', 'DESC']]
-        });
-        res.json({ success: true, donors: results });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
+    const results = await Donor.findAll({ where, order: [['registeredAt', 'DESC']] });
+    res.json({ success: true, donors: results });
 });
 
-// Export Donors as CSV
-app.get('/api/admin/export', verifyAdmin, async (req, res) => {
-    try {
-        const results = await Donor.findAll({ order: [['registeredAt', 'DESC']] });
-        let csv = 'Full Name,DOB,Gender,Phone,Blood Group,State,District,Mandal,Village,Registered At\n';
-        results.forEach(d => {
-            csv += `"${d.fullName}","${d.dateOfBirth}","${d.gender || 'N/A'}","${d.phoneNumber}","${d.bloodGroup}","${d.state || ''}","${d.district || ''}","${d.mandal || ''}","${d.village || ''}","${new Date(d.registeredAt).toLocaleString()}"\n`;
-        });
-        res.setHeader('Content-Type', 'text/csv');
-        res.setHeader('Content-Disposition', 'attachment; filename=mb_bloods_donors.csv');
-        res.status(200).send(csv);
-    } catch (err) {
-        res.status(500).send('Export failed');
-    }
-});
-
-// Delete a Donor
 app.get('/api/admin/donors/delete/:id', verifyAdmin, async (req, res) => {
-    try {
-        const deleted = await Donor.destroy({ where: { id: req.params.id } });
-        if (deleted) res.json({ success: true, message: 'Donor deleted successfully' });
-        else res.status(404).json({ success: false, message: 'Donor not found' });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
+    await Donor.destroy({ where: { id: req.params.id } });
+    res.json({ success: true });
 });
 
-// Toggle Verification
 app.get('/api/admin/donors/verify/:id', verifyAdmin, async (req, res) => {
-    try {
-        const donor = await Donor.findByPk(req.params.id);
-        if (donor) {
-            donor.isVerified = !donor.isVerified;
-            await donor.save();
-            res.json({ success: true, isVerified: donor.isVerified });
-        } else {
-            res.status(404).json({ success: false, message: 'Donor not found' });
-        }
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
+    const donor = await Donor.findByPk(req.params.id);
+    if (donor) {
+        donor.isVerified = !donor.isVerified;
+        await donor.save();
+        res.json({ success: true, isVerified: donor.isVerified });
+    } else res.status(404).json();
 });
 
-// Emergency Alert
 app.post('/api/admin/alerts', verifyAdmin, (req, res) => {
-    const { message, isActive } = req.body;
-    currentAlert = { message, isActive, createdAt: new Date() };
-    res.json({ success: true, alert: currentAlert });
+    currentAlert = { ...req.body, createdAt: new Date() };
+    res.json({ success: true });
 });
 
-app.get('/api/public/alert', (req, res) => {
-    if (currentAlert && currentAlert.isActive) res.json({ success: true, alert: currentAlert });
-    else res.json({ success: true, alert: null });
-});
+app.get('/api/public/alert', (req, res) => res.json({ success: true, alert: currentAlert?.isActive ? currentAlert : null }));
 
-// Public Search
 app.get('/api/public/donors', async (req, res) => {
     const { bloodGroup, address } = req.query;
-    let whereClause = {};
-
-    if (bloodGroup && bloodGroup !== 'All') {
-        whereClause.bloodGroup = bloodGroup;
-    }
-
+    let where = {};
+    if (bloodGroup && bloodGroup !== 'All') where.bloodGroup = bloodGroup;
     if (address) {
-        const { Op } = require('sequelize');
-        whereClause[Op.or] = [
+        where[Op.or] = [
             { state: { [Op.like]: `%${address}%` } },
             { district: { [Op.like]: `%${address}%` } },
             { mandal: { [Op.like]: `%${address}%` } },
             { village: { [Op.like]: `%${address}%` } }
         ];
     }
-
-    try {
-        const results = await Donor.findAll({
-            where: whereClause,
-            order: [['registeredAt', 'DESC']],
-            limit: 50
-        });
-        res.json({ success: true, donors: results });
-    } catch (err) {
-        res.status(500).json({ success: false, message: 'Search failed' });
-    }
+    const results = await Donor.findAll({ where, order: [['registeredAt', 'DESC']], limit: 50 });
+    res.json({ success: true, donors: results });
 });
 
-// Initialize Database and Start Server
-async function startApp() {
-    try {
-        await sequelize.authenticate();
-        console.log('✅ SQL Database connected.');
-        await sequelize.sync(); // Create tables if not exist
-        await initializeGoogleSheets();
-        
-        if (process.env.NODE_ENV !== 'production') {
-            app.listen(PORT, () => {
-                console.log(`✅ Server is running on port ${PORT}`);
-            });
-        }
-    } catch (err) {
-        console.error('Unable to connect to the database:', err);
-    }
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+    initializeApp().then(() => {
+        app.listen(PORT, () => console.log(`Server on ${PORT}`));
+    });
 }
-
-startApp();
 
 module.exports = app;
