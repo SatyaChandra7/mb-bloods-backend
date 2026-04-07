@@ -28,7 +28,7 @@ app.use(express.json());
 // SQL Database Initialization (Sequelize + SQLite)
 const dbPath = process.env.NODE_ENV === 'production' 
     ? path.join('/tmp', 'database.sqlite') 
-    : path.join(__dirname, 'database.sqlite');
+    : path.join(__dirname, '..', 'database.sqlite');
 
 const sequelize = new Sequelize({
     dialect: 'sqlite',
@@ -59,15 +59,15 @@ const ADMIN_USERS = [
 ].filter(u => u.username && u.password);
 
 // Serve static files (HTML, CSS, JS, Assets)
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname, '..')));
 
 // Root route
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
 // Google Sheets Config
-const SERVICE_ACCOUNT_FILE = path.join(__dirname, 'service-account.json');
+const SERVICE_ACCOUNT_FILE = path.join(__dirname, '..', 'service-account.json');
 const SPREADSHEET_ID = process.env.GOOGLE_SPREADSHEET_ID;
 
 let sheets;
@@ -180,7 +180,7 @@ app.use(async (req, res, next) => {
 });
 
 // Storage for "Our Work" Gallery
-const UPLOAD_DIR = path.join(process.env.NODE_ENV === 'production' ? '/tmp' : __dirname, 'assets', GALLERY_PATH);
+const UPLOAD_DIR = path.join(process.env.NODE_ENV === 'production' ? '/tmp' : path.join(__dirname, '..'), 'assets', GALLERY_PATH);
 if (!fs.existsSync(UPLOAD_DIR)) {
     try {
         fs.mkdirSync(UPLOAD_DIR, { recursive: true });
