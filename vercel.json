@@ -2,14 +2,16 @@
   "version": 2,
   "cleanUrls": true,
   "trailingSlash": false,
+  "functions": {
+    "server.js": {
+      "runtime": "@vercel/node"
+    }
+  },
   "rewrites": [
     {
       "source": "/api/(.*)",
       "destination": "/server.js"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/$1"
     }
   ]
 }
+

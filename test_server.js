@@ -28,8 +28,8 @@ async function testRegistration() {
         const result = await res.json();
         if (result.success) {
             console.log('✅ Registration Successful!');
-            console.log('Donor ID:', result.donor._id);
-            return result.donor._id;
+            console.log('Donor ID:', result.donor.id);
+            return result.donor.id;
         } else {
             console.error('❌ Registration Failed:', result.message);
         }
@@ -41,11 +41,12 @@ async function testRegistration() {
 async function testSearch() {
     console.log('\n--- Testing Public Search ---');
     try {
-        const res = await fetch(`${API_BASE}/api/public/donors?bloodGroup=B+&address=Hyderabad`);
+        const params = new URLSearchParams({ bloodGroup: 'B+', address: 'Hyderabad' });
+        const res = await fetch(`${API_BASE}/api/public/donors?${params.toString()}`);
         const result = await res.json();
         if (result.success) {
             console.log(`✅ Search Successful! Found ${result.donors.length} donors.`);
-            result.donors.forEach(d => console.log(` - ${d.fullName} (${d.bloodGroup}) at ${d.address.district}`));
+            result.donors.forEach(d => console.log(` - ${d.fullName} (${d.bloodGroup}) at ${d.district}`));
         } else {
             console.error('❌ Search Failed:', result.message);
         }

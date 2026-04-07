@@ -299,6 +299,21 @@ app.get('/api/admin/donors/delete/:id', verifyAdmin, async (req, res) => {
     res.json({ success: true });
 });
 
+app.get('/api/admin/export', verifyAdmin, async (req, res) => {
+    try {
+        const donors = await Donor.findAll({ order: [['registeredAt', 'DESC']] });
+        let csv = 'Full Name,DOB,Gender,Phone,Blood Group,State,District,Mandal,Village,Registered At,Verified\n';
+        donors.forEach(d => {
+            csv += `"${d.fullName}","${d.dateOfBirth}","${d.gender}","${d.phoneNumber}","${d.bloodGroup}","${d.state}","${d.district}","${d.mandal}","${d.village}","${d.registeredAt}",${d.isVerified}\n`;
+        });
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename=mb-bloods-donors.csv');
+        res.status(200).send(csv);
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
 app.get('/api/admin/donors/verify/:id', verifyAdmin, async (req, res) => {
     const donor = await Donor.findByPk(req.params.id);
     if (donor) {

@@ -196,7 +196,7 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-50 text-sm">
-                            <template x-for="donor in donors" :key="donor._id">
+                            <template x-for="donor in donors" :key="donor.id">
                                 <tr class="hover:bg-red-50/30 transition-colors">
                                     <td class="px-6 py-4 font-semibold text-gray-900" x-text="donor.fullName"></td>
                                     <td class="px-6 py-4 text-gray-600 italic" x-text="donor.gender"></td>
@@ -208,15 +208,15 @@
                                     </td>
                                     <td class="px-6 py-4 text-gray-600 font-medium" x-text="donor.phoneNumber"></td>
                                     <td class="px-6 py-4 text-gray-600">
-                                        <span x-text="`${donor.address.village ? donor.address.village+', ' : ''}${donor.address.mandal ? donor.address.mandal+', ' : ''}${donor.address.district}, ${donor.address.state}`"></span>
+                                        <span x-text="`${donor.village ? donor.village+', ' : ''}${donor.mandal ? donor.mandal+', ' : ''}${donor.district}, ${donor.state}`"></span>
                                     </td>
                                     <td class="px-6 py-4 text-gray-500" x-text="new Date(donor.registeredAt).toLocaleDateString()"></td>
                                     <td class="px-6 py-4 text-right flex items-center justify-end gap-2">
-                                        <button @click="verifyDonor(donor._id)" 
+                                        <button @click="verifyDonor(donor.id)" 
                                                 class="px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
                                                 :class="donor.isVerified ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'"
                                                 x-text="donor.isVerified ? 'Verified ✔' : 'Verify'"></button>
-                                        <button @click="deleteDonor(donor._id)" class="text-red-600 hover:text-red-900 font-bold text-xs uppercase tracking-widest bg-red-50 hover:bg-red-100 px-4 py-2 rounded-xl transition-all">Delete</button>
+                                        <button @click="deleteDonor(donor.id)" class="text-red-600 hover:text-red-900 font-bold text-xs uppercase tracking-widest bg-red-50 hover:bg-red-100 px-4 py-2 rounded-xl transition-all">Delete</button>
                                     </td>
                                 </tr>
                             </template>
