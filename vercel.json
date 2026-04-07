@@ -4,7 +4,7 @@
   "trailingSlash": false,
   "functions": {
     "server.js": {
-      "runtime": "@vercel/node"
+      "runtime": "nodejs20.x"
     }
   },
   "rewrites": [
