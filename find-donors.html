@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Donors | Mahesh Babu Bloods</title>
+    <!-- Tailwind CSS v4 Browser Script -->
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --blood-red: #D32F2F;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        h1, h2, h3, .font-display {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .blood-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .blood-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(211, 47, 47, 0.1), 0 10px 10px -5px rgba(211, 47, 47, 0.04);
+        }
+
+        /* Hero Animation */
+        @keyframes fade-in-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in-up {
+            animation: fade-in-up 0.6s ease-out forwards;
+        }
+    </style>
+</head>
+
+<body class="text-gray-900" x-data="findDonorsApp()">
+
+    <!-- Header / Navbar -->
+    <nav class="bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4 sticky top-0 z-50">
+        <div class="container mx-auto flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-3">
+                <img src="assets/mb%20bloods%20logo.png" alt="MB Bloods" class="h-10 w-auto">
+                <span class="font-black text-lg tracking-wider text-red-600 hidden sm:inline">FIND DONORS</span>
+            </a>
+            <div class="flex items-center gap-6 text-sm font-bold uppercase tracking-widest text-gray-500">
+                <a href="index.html" class="hover:text-red-600 transition-colors">Home</a>
+                <a href="admin.html" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all">Admin</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Search Hero -->
+    <header class="bg-gradient-to-b from-white to-gray-50 pt-16 pb-24 text-center px-6">
+        <div class="max-w-4xl mx-auto animate-fade-in-up">
+            <h1 class="text-5xl md:text-7xl font-black mb-6 tracking-tight text-gray-900">
+                Find a <span class="text-red-600 underline decoration-red-200">Life Saver</span> Near You
+            </h1>
+            <p class="text-xl text-gray-500 mb-12 max-w-2xl mx-auto font-medium">Search for blood donors by blood group or location in real-time. No registration required to search.</p>
+
+            <!-- Search Bar / Filters -->
+            <div class="bg-white p-4 md:p-6 rounded-[2.5rem] shadow-2xl shadow-red-100/50 border border-red-50 grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+                <div>
+                    <select x-model="filters.bloodGroup" class="w-full bg-gray-50 border-none px-4 py-4 rounded-2xl font-bold text-gray-700 focus:ring-2 focus:ring-red-500 outline-none">
+                        <option value="All">All Groups</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                    </select>
+                </div>
+                <div>
+                    <select x-model="selectedState" @change="selectedDistrict=''; selectedMandal=''" class="w-full bg-gray-50 border-none px-4 py-4 rounded-2xl font-bold text-gray-700 focus:ring-2 focus:ring-red-500 outline-none">
+                        <option value="">Select State</option>
+                        <template x-for="state in states" :key="state">
+                            <option :value="state" x-text="state"></option>
+                        </template>
+                    </select>
+                </div>
+                <div>
+                    <select x-model="selectedDistrict" @change="selectedMandal=''" :disabled="!selectedState" class="w-full bg-gray-50 border-none px-4 py-4 rounded-2xl font-bold text-gray-700 focus:ring-2 focus:ring-red-500 outline-none disabled:opacity-50">
+                        <option value="">Select District</option>
+                        <template x-for="district in districts" :key="district">
+                            <option :value="district" x-text="district"></option>
+                        </template>
+                    </select>
+                </div>
+                <button @click="search()" class="px-10 py-4 bg-red-600 text-white font-black rounded-2xl hover:bg-black transition-all shadow-lg hover:shadow-red-200 active:scale-95 uppercase tracking-widest whitespace-nowrap">
+                    Search
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Results Section -->
+    <main class="container mx-auto px-6 -mt-10 mb-20 relative z-10">
+        
+        <div x-show="isLoading" class="flex flex-col items-center justify-center py-20">
+            <svg class="animate-spin h-12 w-12 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+            <p class="mt-4 text-gray-400 font-bold uppercase tracking-widest text-sm">Scanning Database...</p>
+        </div>
+
+        <div x-show="!isLoading && hasSearched && donors.length === 0" class="bg-white rounded-[3rem] p-20 text-center shadow-xl border border-gray-100 max-w-4xl mx-auto" x-cloak>
+            <div class="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-8">
+                <svg class="w-12 h-12 text-red-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <h3 class="text-3xl font-black text-gray-800 mb-4">No Donors Found</h3>
+            <p class="text-gray-500 text-lg">We couldn't find any donors matching those criteria yet. Try searching in a different district or state.</p>
+        </div>
+
+        <div x-show="!isLoading && donors.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" x-cloak>
+            <template x-for="donor in donors" :key="donor._id">
+                <div class="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm blood-card flex flex-col items-center text-center relative overflow-hidden group">
+                    <!-- Blood Group Badge -->
+                    <div class="absolute top-6 right-6 w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center font-black text-xl text-red-600 transition-colors group-hover:bg-red-600 group-hover:text-white" x-text="donor.bloodGroup"></div>
+                    
+                    <div class="w-20 h-20 bg-gray-50 rounded-full mb-6 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
+                        <svg class="w-10 h-10 text-gray-300" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg>
+                    </div>
+
+                    <h3 class="text-xl font-bold text-gray-800 mb-1" x-text="donor.fullName"></h3>
+                    <div x-show="donor.isVerified" class="flex items-center gap-1 text-green-600 font-black text-[10px] uppercase tracking-widest mb-1">
+                         <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg>
+                         Verified Donor
+                    </div>
+                    <p class="text-gray-400 text-sm font-bold uppercase tracking-widest mb-6" x-text="donor.address.district"></p>
+                    
+                    <div class="w-full pt-6 border-t border-gray-50 flex flex-col gap-3">
+                        <div class="flex flex-col text-left px-2">
+                             <span class="text-[10px] text-gray-400 font-black uppercase tracking-tighter mb-1">Current Status</span>
+                             <span class="text-green-600 text-sm font-bold flex items-center gap-2">
+                                 <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                 Ready to Donate
+                             </span>
+                        </div>
+                        <a :href="`https://wa.me/91${donor.phoneNumber}?text=Hello ${donor.fullName}, I found your contact on MB Bloods. We need ${donor.bloodGroup} blood urgently. Can you help?`" 
+                           target="_blank"
+                           class="w-full mt-2 bg-gray-900 text-white py-3 rounded-xl font-bold text-sm tracking-widest hover:bg-red-600 transition-all flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.588-5.946 0-6.556 5.332-11.888 11.888-11.888 3.176 0 6.161 1.237 8.404 3.48s3.481 5.229 3.481 8.406c0 6.556-5.332 11.888-11.888 11.888-2.01 0-3.988-.511-5.741-1.482l-6.143 1.705zm6.349-4.435l.353.21c1.47.873 3.158 1.335 4.887 1.335 5.507 0 9.991-4.484 9.991-9.99s-4.484-9.99-9.991-9.99c-5.507 0-9.99 4.484-9.99 9.99 0 2.225.734 4.394 2.121 6.166l.231.293-.958 3.498 3.582-.933zm9.363-7.513c-.237-.118-1.399-.691-1.617-.771-.217-.079-.376-.118-.535.118s-.614.771-.752.928-.276.178-.514.059-.991-.365-1.887-1.164c-.698-.622-1.168-1.391-1.305-1.628s-.015-.365.105-.483c.107-.107.237-.276.356-.415s.158-.237.237-.395.04-.296-.02-.415-.535-1.284-.732-1.758c-.192-.464-.385-.4-.535-.407-.138-.007-.297-.008-.455-.008s-.415.059-.633.296c-.217.237-.831.811-.831 1.978s.85 2.293.969 2.451c.119.158 1.673 2.555 4.053 3.582.566.244 1.008.389 1.353.499.569.181 1.088.155 1.498.094.457-.068 1.399-.573 1.597-1.126.197-.553.197-1.028.138-1.126s-.217-.118-.454-.237z" /></svg>
+                            Connect
+                        </a>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 py-12 text-center border-t border-gray-800">
+        <div class="container mx-auto px-6">
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs">© 2026 MB Bloods Foundation. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        function findDonorsApp() {
+            return {
+                filters: {
+                    bloodGroup: 'All',
+                    address: ''
+                },
+                donors: [],
+                isLoading: false,
+                hasSearched: false,
+                
+                // Cascading Logic
+                locations: {},
+                selectedState: '',
+                selectedDistrict: '',
+                selectedMandal: '',
+                async init() {
+                    try {
+                        const res = await fetch('assets/locations.json');
+                        this.locations = await res.json();
+                    } catch (err) { console.error('Failed to load locations', err); }
+                },
+                get states() { return Object.keys(this.locations); },
+                get districts() { return this.selectedState ? Object.keys(this.locations[this.selectedState] || {}) : []; },
+                
+                get apiBase() {
+                    return (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:5000' : '';
+                },
+
+                async search() {
+                    this.isLoading = true;
+                    this.hasSearched = true;
+                    try {
+                        const params = new URLSearchParams();
+                        if (this.filters.bloodGroup !== 'All') params.append('bloodGroup', this.filters.bloodGroup);
+                        
+                        // Combine dropdowns for address search
+                        let addressQuery = this.selectedState;
+                        if (this.selectedDistrict) addressQuery += ' ' + this.selectedDistrict;
+                        if (addressQuery.trim() !== '') params.append('address', addressQuery.trim());
+                        
+                        // We use a public search endpoint (unauthenticated version of list)
+                        const res = await fetch(`${this.apiBase}/api/public/donors?${params.toString()}`);
+                        const data = await res.json();
+                        
+                        if (data.success) {
+                            this.donors = data.donors;
+                        } else {
+                            alert('Search failed. Backend might be offline.');
+                        }
+                    } catch (err) {
+                        alert('Error connecting to the MB Bloods network.');
+                    } finally {
+                        this.isLoading = false;
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>

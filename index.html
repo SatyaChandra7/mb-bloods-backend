@@ -76,8 +76,6 @@
         .hover-scale:hover {
             transform: scale(1.05);
         }
-
-
     </style>
 </head>
 
@@ -87,69 +85,70 @@
         successOpen: false,
         mobileMenuOpen: false,
         activeImageIndex: 0,
-        galleryImages: [
-            'assets/our work/HEMANTH.jpg', 'assets/our work/IMG_20260123_181807.jpg', 'assets/our work/K SAI.jpg', 
-            'assets/our work/MALLESH.jpg', 'assets/our work/NAVEEN.jpg', 'assets/our work/SAI.jpg', 
-            'assets/our work/g anil.jpg', 'assets/our work/vamsi.jpg',
-            'assets/our work/mb_bloods-20260123-0001.jpg', 'assets/our work/mb_bloods-20260123-0002.jpg', 
-            'assets/our work/mb_bloods-20260123-0003.jpg', 'assets/our work/mb_bloods-20260123-0004.jpg', 
-            'assets/our work/mb_bloods-20260123-0005.jpg', 'assets/our work/mb_bloods-20260123-0006.jpg', 
-            'assets/our work/mb_bloods-20260123-0007.jpg', 'assets/our work/mb_bloods-20260123-0008.jpg', 
-            'assets/our work/mb_bloods-20260123-0009.jpg', 'assets/our work/mb_bloods-20260123-0010.jpg', 
-            'assets/our work/mb_bloods-20260123-0011.jpg', 'assets/our work/mb_bloods-20260123-0012.jpg', 
-            'assets/our work/mb_bloods-20260123-0013.jpg', 'assets/our work/mb_bloods-20260123-0014.jpg',
-            'assets/our work/mb_bloods-20260123-0015.jpg', 'assets/our work/mb_bloods-20260123-0016.jpg',
-            'assets/our work/mb_bloods-20260123-0017.jpg', 'assets/our work/mb_bloods-20260123-0018.jpg',
-            'assets/our work/mb_bloods-20260123-0019.jpg', 'assets/our work/mb_bloods-20260123-0020.jpg',
-            'assets/our work/mb_bloods-20260123-0021.jpg', 'assets/our work/mb_bloods-20260123-0022.jpg',
-            'assets/our work/mb_bloods-20260123-0023.jpg', 'assets/our work/mb_bloods-20260123-0024.jpg',
-            'assets/our work/mb_bloods-20260123-0025.jpg', 'assets/our work/mb_bloods-20260123-0026.jpg',
-            'assets/our work/mb_bloods-20260123-0027.jpg', 'assets/our work/mb_bloods-20260123-0028.jpg',
-            'assets/our work/mb_bloods-20260123-0029.jpg', 'assets/our work/mb_bloods-20260123-0030.jpg',
-            'assets/our work/mb_bloods-20260123-0031.jpg', 'assets/our work/mb_bloods-20260123-0032.jpg',
-            'assets/our work/mb_bloods-20260123-0033.jpg', 'assets/our work/mb_bloods-20260123-0034.jpg',
-            'assets/our work/mb_bloods-20260123-0035.jpg', 'assets/our work/mb_bloods-20260123-0036.jpg',
-            'assets/our work/mb_bloods-20260123-0037.jpg', 'assets/our work/mb_bloods-20260123-0038.jpg',
-            'assets/our work/mb_bloods-20260123-0039.jpg', 'assets/our work/mb_bloods-20260123-0040.jpg',
-            'assets/our work/mb_bloods-20260123-0041.jpg', 'assets/our work/mb_bloods-20260123-0042.jpg',
-            'assets/our work/mb_bloods-20260123-0043.jpg', 'assets/our work/mb_bloods-20260123-0044.jpg',
-            'assets/our work/mb_bloods-20260123-0045.jpg', 'assets/our work/mb_bloods-20260123-0046.jpg',
-            'assets/our work/mb_bloods-20260123-0047.jpg', 'assets/our work/mb_bloods-20260123-0048.jpg',
-            'assets/our work/mb_bloods-20260123-0049.jpg', 'assets/our work/mb_bloods-20260123-0050.jpg',
-            'assets/our work/mb_bloods-20260123-0051.jpg', 'assets/our work/mb_bloods-20260123-0052.jpg',
-            'assets/our work/mb_bloods-20260123-0053.jpg', 'assets/our work/mb_bloods-20260123-0054.jpg',
-            'assets/our work/mb_bloods-20260123-0055.jpg', 'assets/our work/mb_bloods-20260123-0056.jpg',
-            'assets/our work/mb_bloods-20260123-0057.jpg', 'assets/our work/mb_bloods-20260123-0058.jpg',
-            'assets/our work/mb_bloods-20260123-0059.jpg', 'assets/our work/mb_bloods-20260123-0060.jpg',
-            'assets/our work/mb_bloods-20260123-0061.jpg', 'assets/our work/mb_bloods-20260123-0062.jpg',
-            'assets/our work/mb_bloods-20260123-0063.jpg', 'assets/our work/mb_bloods-20260123-0064.jpg',
-            'assets/our work/mb_bloods-20260123-0065.jpg', 'assets/our work/mb_bloods-20260123-0069.jpg'
-        ],
-        donorCount: 75,
+        galleryImages: [],
+        displayCount: 0,
         isSubmitting: false,
-        async fetchDonorCount() {
+        emergencyMessage: '',
+        async fetchAlert() {
             try {
-                const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:5000' : '';
-                const res = await fetch(`${API_BASE}/api/donors/count`);
+                const res = await fetch('/api/public/alert');
                 const data = await res.json();
-                if (data.count !== undefined) this.donorCount = data.count;
+                if (data.alert?.isActive) this.emergencyMessage = data.alert.message;
+            } catch (err) { console.log('Failed to load alert'); }
+        },
+        animateCounter(target) {
+            let start = this.displayCount;
+            let duration = 2000; // 2 seconds animation
+            let startTime = null;
+
+            const step = (timestamp) => {
+                if (!startTime) startTime = timestamp;
+                let progress = Math.min((timestamp - startTime) / duration, 1);
+                this.displayCount = Math.floor(progress * (target - start) + start);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        },
+        async fetchGallery() {
+            try {
+                const res = await fetch('/api/public/gallery');
+                const data = await res.json();
+                if (data.success) {
+                    this.galleryImages = data.images;
+                    this.donationCount = data.images.length;
+                    this.animateCounter(this.donationCount);
+                }
+            } catch (err) { console.log('Failed to fetch gallery'); }
+        },
+        async fetchDonationCount() {
+            try {
+                const res = await fetch('/api/donations/count');
+                const data = await res.json();
+                if (data.count !== undefined) {
+                    this.donationCount = data.count;
+                    this.animateCounter(this.donationCount);
+                }
             } catch (err) {
                 console.log('Backend not connected, using default count');
             }
         },
+        // Cascading Location logic removed as per request for manual entry
+        
         async submitDonation(event) {
             this.isSubmitting = true;
             try {
                 const formData = new FormData(event.target);
                 const data = Object.fromEntries(formData.entries());
                 
-                const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:5000' : '';
-                const response = await fetch(`${API_BASE}/api/donors`, {
+                const response = await fetch('/api/donors', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         fullName: data.fullName,
                         dateOfBirth: data.dateOfBirth,
+                        gender: data.gender,
                         phoneNumber: data.phoneNumber,
                         bloodGroup: data.bloodGroup,
                         address: {
@@ -164,9 +163,13 @@
                 const result = await response.json();
                 if (result.success) {
                     this.successOpen = true;
+                    // Play success sound
+                    const sound = document.getElementById('successSound');
+                    if (sound) sound.play().catch(e => console.log('Audio play failed', e));
+                    
                     this.donateOpen = false;
                     event.target.reset();
-                    this.fetchDonorCount();
+                    this.fetchDonationCount();
                 } else {
                     alert('Registration failed: ' + result.message);
                 }
@@ -176,7 +179,41 @@
                 this.isSubmitting = false;
             }
         }
-    }" x-init="fetchDonorCount()" x-bind:class="galleryOpen || donateOpen ? 'overflow-hidden' : ''">
+    }" x-init="fetchDonationCount(); fetchGallery(); fetchAlert()" x-bind:class="galleryOpen || donateOpen ? 'overflow-hidden' : ''">
+
+    <!-- Emergency Marquee -->
+    <div x-show="emergencyMessage" class="bg-red-600 text-white py-3 sticky top-0 z-[60] overflow-hidden" x-cloak>
+        <div class="flex items-center gap-4 flex-nowrap whitespace-nowrap animate-marquee">
+            <span class="font-black uppercase tracking-widest flex items-center gap-4 px-4 bg-white/20">
+                <svg class="w-4 h-4 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z">
+                    </path>
+                </svg>
+                URGENT URGENT
+            </span>
+            <span class="font-bold text-lg px-4" x-text="emergencyMessage"></span>
+            <span class="font-bold text-lg px-4" x-text="emergencyMessage"></span>
+            <span class="font-bold text-lg px-4" x-text="emergencyMessage"></span>
+        </div>
+    </div>
+    <style>
+        @keyframes marquee {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        .animate-marquee {
+            display: inline-flex;
+            animation: marquee 20s linear infinite;
+            width: max-content;
+        }
+    </style>
 
     <!-- Sticky Navbar -->
     <nav
@@ -186,7 +223,7 @@
         </div>
 
         <div class="hidden md:flex items-center gap-8 text-sm font-bold text-gray-600 uppercase tracking-wide">
-            <a href="#" class="hover:text-red-600 transition-colors">Home</a>
+            <a href="index.html" class="hover:text-red-600 transition-colors">Home</a>
             <a href="#about" class="hover:text-red-600 transition-colors">About</a>
             <a href="#" @click.prevent="donateOpen = true" class="hover:text-red-600 transition-colors">Donate</a>
             <a href="https://wa.me/919491463888?text=I_need_blood_request" target="_blank"
@@ -320,11 +357,11 @@
 
             <div class="relative z-10 flex flex-row justify-center items-center gap-4 md:gap-8 flex-nowrap shrink-0">
                 <button @click="donateOpen = true"
-                    class="px-6 md:px-14 py-4 md:py-6 bg-red-600 text-white rounded-[1.5rem] md:rounded-[2rem] font-black text-sm md:text-2xl hover:bg-gray-900 hover:scale-105 transition-all shadow-2xl shadow-red-200 uppercase tracking-widest whitespace-nowrap">
+                    class="px-6 md:px-10 py-4 md:py-6 bg-red-600 text-white rounded-[1.5rem] md:rounded-[2rem] font-black text-sm md:text-xl hover:bg-gray-900 hover:scale-105 transition-all shadow-2xl shadow-red-200 uppercase tracking-widest whitespace-nowrap">
                     DONATE
                 </button>
                 <a href="https://wa.me/919491463888?text=I_need_blood_request" target="_blank"
-                    class="px-6 md:px-14 py-4 md:py-6 bg-red-600 text-white rounded-[1.5rem] md:rounded-[2rem] font-black text-sm md:text-2xl hover:bg-gray-900 hover:scale-105 transition-all flex items-center gap-4 shadow-2xl shadow-red-200 uppercase tracking-widest whitespace-nowrap">
+                    class="px-6 md:px-10 py-4 md:py-6 bg-red-600 text-white rounded-[1.5rem] md:rounded-[2rem] font-black text-sm md:text-xl hover:bg-gray-900 hover:scale-105 transition-all flex items-center gap-4 shadow-2xl shadow-red-200 uppercase tracking-widest whitespace-nowrap">
                     REQUEST BLOOD
                 </a>
             </div>
@@ -412,6 +449,14 @@
                         painless and secure donation.</p>
                 </div>
             </div>
+
+            <!-- Foundation Contact Highlight -->
+            <div class="mt-20 text-center">
+                <p class="text-[10px] font-black text-red-600 uppercase tracking-[0.4em] mb-4">Foundation Support Email</p>
+                <a href="mailto:MaheshBabuBloods@gmail.com" class="text-2xl md:text-5xl font-black text-gray-900 font-display hover:text-red-600 transition-colors">
+                    MaheshBabuBloods@gmail.com
+                </a>
+            </div>
         </div>
     </section>
 
@@ -453,9 +498,9 @@
                 <div class="flex flex-col items-center md:items-start md:border-l-2 md:border-red-600 md:pl-10">
                     <span
                         class="text-4xl md:text-6xl font-black tracking-tighter font-display bg-gradient-to-r from-[#d53f00] to-[#ffed02] bg-clip-text text-transparent leading-none"
-                        x-text="donorCount">75</span>
+                        x-text="displayCount">0</span>
                     <span
-                        class="text-xs md:text-sm font-bold text-red-600 uppercase tracking-[0.3em] mt-1">Donors</span>
+                        class="text-xs md:text-sm font-bold text-red-600 uppercase tracking-[0.3em] mt-1">Donations</span>
                 </div>
             </div>
             <button @click.prevent="galleryOpen = true"
@@ -558,7 +603,7 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-1 gap-6">
                         <div class="space-y-2">
                             <label class="text-sm font-bold text-gray-700 ml-1">Phone Number</label>
                             <div
@@ -568,9 +613,12 @@
                                 <input type="tel" name="phoneNumber" placeholder="00000 00000" maxlength="10"
                                     pattern="[0-9]{10}" required
                                     oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                                    class="w-full px-5 py-4 bg-transparent focus:outline-none">
+                                    class="w-full px-5 py-4 bg-transparent focus:outline-none font-bold placeholder:font-normal">
                             </div>
                         </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="space-y-2">
                             <label class="text-sm font-bold text-gray-700 ml-1">Blood Group</label>
                             <select name="bloodGroup" required
@@ -585,6 +633,15 @@
                                 <option>AB-</option>
                             </select>
                         </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-bold text-gray-700 ml-1">Gender</label>
+                            <select name="gender" required
+                                class="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-red-500 focus:outline-none focus:bg-white transition-all">
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
                     </div>
 
                     <!-- Nested Address Section -->
@@ -593,12 +650,12 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="space-y-2">
                                 <label class="text-sm font-semibold text-gray-600">State</label>
-                                <input type="text" name="state" placeholder="State name" required
+                                <input type="text" name="state" placeholder="e.g. Telangana" required
                                     class="w-full px-5 py-3 bg-white border border-gray-100 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all">
                             </div>
                             <div class="space-y-2">
                                 <label class="text-sm font-semibold text-gray-600">District</label>
-                                <input type="text" name="district" placeholder="District name" required
+                                <input type="text" name="district" placeholder="e.g. Hyderabad" required
                                     class="w-full px-5 py-3 bg-white border border-gray-100 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all">
                             </div>
                         </div>
@@ -606,7 +663,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="space-y-2">
                                 <label class="text-sm font-semibold text-gray-600">Mandal</label>
-                                <input type="text" name="mandal" placeholder="Mandal name" required
+                                <input type="text" name="mandal" placeholder="e.g. Jubilee Hills" required
                                     class="w-full px-5 py-3 bg-white border border-gray-100 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all">
                             </div>
                             <div class="space-y-2">
@@ -751,16 +808,23 @@
         <div class="bg-white rounded-3xl p-8 max-w-sm text-center shadow-2xl relative border border-gray-100">
             <!-- Checkmark -->
             <div class="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" stroke-width="3"
+                    viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
                 </svg>
             </div>
-            <h3 class="text-2xl font-black mb-3 font-display uppercase tracking-tight text-gray-900">Registration Successful!</h3>
-            <p class="text-gray-500 font-medium mb-8 leading-relaxed">Thank you for donating blood! Your details have been verified and directly uploaded to the Google Sheets list and the Admin Panel.</p>
-            <button @click="successOpen = false" class="bg-gray-900 hover:bg-black text-white w-full py-4 rounded-2xl font-bold transition-all shadow-lg active:scale-95 uppercase tracking-wider text-sm">Continue</button>
+            <h3 class="text-2xl font-black mb-3 font-display uppercase tracking-tight text-gray-900">Registration
+                Successful!</h3>
+            <p class="text-gray-500 font-medium mb-8 leading-relaxed">Thank you for donating blood! Your details have
+                been verified and directly uploaded to the Google Sheets list and the Admin Panel.</p>
+            <button @click="successOpen = false"
+                class="bg-gray-900 hover:bg-black text-white w-full py-4 rounded-2xl font-bold transition-all shadow-lg active:scale-95 uppercase tracking-wider text-sm">Continue</button>
         </div>
     </div>
 
+
+    <!-- Success Sound -->
+    <audio id="successSound" src="assets/denoise_video_20260406_145944_edit.mp3.mpeg" preload="auto"></audio>
 
 </body>
 
