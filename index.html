@@ -89,9 +89,12 @@
         displayCount: 0,
         isSubmitting: false,
         emergencyMessage: '',
+        get apiBase() {
+            return (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:5000' : '';
+        },
         async fetchAlert() {
             try {
-                const res = await fetch('/api/public/alert');
+                const res = await fetch(`${this.apiBase}/api/public/alert`);
                 const data = await res.json();
                 if (data.alert?.isActive) this.emergencyMessage = data.alert.message;
             } catch (err) { console.log('Failed to load alert'); }
@@ -113,7 +116,7 @@
         },
         async fetchGallery() {
             try {
-                const res = await fetch('/api/public/gallery');
+                const res = await fetch(`${this.apiBase}/api/public/gallery`);
                 const data = await res.json();
                 if (data.success) {
                     this.galleryImages = data.images;
@@ -124,7 +127,7 @@
         },
         async fetchDonationCount() {
             try {
-                const res = await fetch('/api/donations/count');
+                const res = await fetch(`${this.apiBase}/api/donations/count`);
                 const data = await res.json();
                 if (data.count !== undefined) {
                     this.donationCount = data.count;
@@ -142,7 +145,7 @@
                 const formData = new FormData(event.target);
                 const data = Object.fromEntries(formData.entries());
                 
-                const response = await fetch('/api/donors', {
+                const response = await fetch(`${this.apiBase}/api/donors`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

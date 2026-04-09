@@ -255,7 +255,9 @@
                 selectedFile: null,
                 previewUrl: '',
                 isUploading: false,
-                
+                get apiBase() {
+                    return (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:5000' : '';
+                },
 
                 init() {
                     if (this.token) {
@@ -269,7 +271,7 @@
                 async fetchStats() {
                     if (!this.isAuthenticated) return;
                     try {
-                        const res = await fetch('/api/admin/stats', {
+                        const res = await fetch(`${this.apiBase}/api/admin/stats`, {
                             headers: { 'Authorization': `Bearer ${this.token}` }
                         });
                         const data = await res.json();
@@ -282,7 +284,7 @@
 
                 async fetchAlertAdmin() {
                     try {
-                        const res = await fetch('/api/public/alert');
+                        const res = await fetch(`${this.apiBase}/api/public/alert`);
                         const data = await res.json();
                         if (data.alert) this.tempAlert = data.alert.message;
                     } catch (e) {}
@@ -290,7 +292,7 @@
 
                 async fetchDonationCountAdmin() {
                     try {
-                        const res = await fetch('/api/donations/count');
+                        const res = await fetch(`${this.apiBase}/api/donations/count`);
                         const data = await res.json();
                         if (data.count !== undefined) this.donationCount = data.count;
                     } catch (err) { console.error('Donation count error', err); }
@@ -310,7 +312,7 @@
                         const formData = new FormData();
                         formData.append('image', this.selectedFile);
 
-                        const res = await fetch('/api/admin/upload', {
+                        const res = await fetch(`${this.apiBase}/api/admin/upload`, {
                             method: 'POST',
                             headers: { 'Authorization': `Bearer ${this.token}` },
                             body: formData
@@ -334,7 +336,7 @@
 
                 async saveAlert() {
                     try {
-                        const res = await fetch('/api/admin/alerts', {
+                        const res = await fetch(`${this.apiBase}/api/admin/alerts`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.token}` },
                             body: JSON.stringify({ message: this.tempAlert, isActive: true })
@@ -345,7 +347,7 @@
 
                 async clearAlert() {
                    try {
-                        const res = await fetch('/api/admin/alerts', {
+                        const res = await fetch(`${this.apiBase}/api/admin/alerts`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.token}` },
                             body: JSON.stringify({ message: '', isActive: false })
@@ -366,7 +368,7 @@
                 async deleteDonor(id) {
                     if (!confirm('Are you sure you want to delete this donor? This action cannot be undone.')) return;
                     try {
-                        const res = await fetch(`/api/admin/donors/delete/${id}?token=${this.token}`);
+                        const res = await fetch(`${this.apiBase}/api/admin/donors/delete/${id}?token=${this.token}`);
                         const data = await res.json();
                         if (data.success) {
                             this.fetchDonors();
@@ -381,7 +383,7 @@
 
                 async verifyDonor(id) {
                     try {
-                        const res = await fetch(`/api/admin/donors/verify/${id}?token=${this.token}`);
+                        const res = await fetch(`${this.apiBase}/api/admin/donors/verify/${id}?token=${this.token}`);
                         const data = await res.json();
                         if (data.success) {
                             this.fetchDonors();
@@ -393,7 +395,7 @@
                     this.isLoading = true;
                     this.loginError = '';
                     try {
-                        const res = await fetch('/api/admin/login', {
+                        const res = await fetch(`${this.apiBase}/api/admin/login`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(this.credentials)
@@ -433,7 +435,7 @@
                         if (this.filters.bloodGroup !== 'All') params.append('bloodGroup', this.filters.bloodGroup);
                         if (this.filters.address.trim() !== '') params.append('address', this.filters.address);
                         
-                        const res = await fetch(`/api/admin/donors?${params.toString()}`, {
+                        const res = await fetch(`${this.apiBase}/api/admin/donors?${params.toString()}`, {
                             headers: {
                                 'Authorization': `Bearer ${this.token}`
                             }
