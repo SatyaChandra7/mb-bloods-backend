@@ -7,13 +7,13 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 const express = require('express');
+const path = require('path');
+const fs = require('fs');
 const cors = require('cors');
 const { google } = require('googleapis');
 const jwt = require('jsonwebtoken');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 const multer = require('multer');
-const fs = require('fs');
-const path = require('path');
 const { Sequelize, DataTypes, Op } = require('sequelize');
 
 const app = express();
