@@ -5,6 +5,6 @@
 // Vercel ONLY recognizes files inside the "api/" folder as serverless functions.
 // Our actual backend logic lives in "backend/index.js".
 
-const app = require('../backend/index.js');
+const app = require('../index.js');
 
 module.exports = app;
