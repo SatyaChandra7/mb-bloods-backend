@@ -1,15 +1,37 @@
 {
   "version": 2,
-  "cleanUrls": true,
-  "trailingSlash": false,
+  "builds": [
+    {
+      "src": "api/index.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "frontend/**",
+      "use": "@vercel/static"
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "backend/index.js"
+      "destination": "/api/index.js"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/assets/(.*)",
+      "dest": "/frontend/assets/$1"
     },
     {
-      "source": "/(.*)",
-      "destination": "frontend/$1"
+      "src": "/admin.html",
+      "dest": "/frontend/admin.html"
+    },
+    {
+      "src": "/find-donors.html",
+      "dest": "/frontend/find-donors.html"
+    },
+    {
+      "src": "^/$",
+      "dest": "/frontend/index.html"
     }
   ]
 }
