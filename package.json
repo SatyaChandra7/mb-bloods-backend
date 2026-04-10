@@ -5,10 +5,10 @@
     "node": ">=22.x"
   },
   "description": "Backend for Mahesh Babu Bloods Landing Page",
-  "main": "api/index.js",
+  "main": "backend/index.js",
   "scripts": {
-    "start": "node api/index.js",
-    "dev": "nodemon api/index.js"
+    "start": "node backend/index.js",
+    "dev": "nodemon backend/index.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
